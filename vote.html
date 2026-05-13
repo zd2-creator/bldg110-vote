@@ -241,7 +241,6 @@ function resizeCanvas() {
     img.src = saved;
   }
 }
-}
 setTimeout(resizeCanvas,100); window.addEventListener('resize',resizeCanvas);
 function getPos(e){ const r=canvas.getBoundingClientRect(); if(e.touches) return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top}; return{x:e.clientX-r.left,y:e.clientY-r.top}; }
 canvas.addEventListener('mousedown', e=>{drawing=true;const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
