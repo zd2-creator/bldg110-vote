@@ -241,8 +241,6 @@ function loadProgress() {
       document.getElementById('fProgFill').style.width   = pct+'%';
       document.getElementById('fLaadCount').textContent  = laadCount;
       document.getElementById('fCohenCount').textContent = cohenCount;
-      document.getElementById('fSignedCount').textContent   = signedApts.size;
-      document.getElementById('fUnsignedCount').textContent = TOTAL - signedApts.size;
       const grid=document.getElementById('fAptGrid'); grid.innerHTML='';
       for(let i=1;i<=TOTAL;i++){
         const cell=document.createElement('div');
