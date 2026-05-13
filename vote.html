@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>בחירת חברת בדק — בניין 110</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:Arial, sans-serif; background:#f5f5f5; direction:rtl; }
+.page { max-width:520px; margin:0 auto; padding:16px; }
+@media print { .no-print { display:none !important; } }
+
+.doc-header { background:#fff; border:1px solid #ddd; border-radius:8px; padding:20px; margin-bottom:16px; font-size:14px; line-height:1.8; }
+.doc-header h2 { font-size:16px; font-weight:bold; margin-bottom:8px; }
+.companies { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.company-info { background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:10px 14px; font-size:13px; text-align:center; font-weight:bold; color:#333; }
+
+.form-card { background:#fff; border:1px solid #ddd; border-radius:8px; padding:20px; }
+.form-card h2 { font-size:15px; margin-bottom:16px; font-weight:bold; }
+
+.field { margin-bottom:14px; }
+.field label { display:block; font-size:13px; color:#555; margin-bottom:5px; }
+.field input { width:100%; padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; font-family:Arial; direction:rtl; }
+.field input:focus { outline:none; border-color:#1D9E75; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+.choice-section { margin-bottom:16px; }
+.choice-section > label { display:block; font-size:13px; color:#555; margin-bottom:8px; }
+.choice-cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.choice-card { border:2px solid #ddd; border-radius:8px; padding:16px 10px; text-align:center; cursor:pointer; transition:all .2s; background:#fff; }
+.choice-card:hover { border-color:#1D9E75; background:#f0fdf8; }
+.choice-card input[type=radio] { display:none; }
+.choice-card.selected { border-color:#1D9E75; background:#e0f5ee; }
+.choice-card .co-name { font-size:14px; font-weight:bold; color:#333; }
+.choice-card .co-icon { font-size:28px; margin-bottom:6px; }
+.choice-card.selected .co-name { color:#0F6E56; }
+
+.sig-section { margin-bottom:14px; }
+.sig-section label { display:block; font-size:13px; color:#555; margin-bottom:5px; }
+canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cursor:crosshair; touch-action:none; display:block; background:#fff; }
+.sig-clear { font-size:12px; color:#888; background:none; border:1px solid #ddd; border-radius:4px; padding:4px 10px; margin-top:6px; cursor:pointer; }
+
+.btn-submit { width:100%; padding:12px; background:#1D9E75; color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; font-family:Arial; margin-top:6px; }
+.btn-submit:disabled { background:#aaa; cursor:not-allowed; }
+.err { color:#c00; font-size:13px; margin-top:8px; }
+.loading { display:none; text-align:center; padding:10px; color:#555; font-size:14px; }
+
+.success-screen { display:none; background:#fff; border:1px solid #ddd; border-radius:8px; padding:40px 20px; text-align:center; }
+.success-screen .check { font-size:48px; margin-bottom:12px; }
+.success-screen h2 { font-size:18px; color:#1D9E75; margin-bottom:8px; }
+.success-screen p { font-size:14px; color:#555; }
+
+.progress-section { background:#fff; border:1px solid #ddd; border-radius:8px; padding:16px; margin-top:16px; max-width:520px; margin-left:auto; margin-right:auto; }
+.prog-top { display:flex; justify-content:space-between; font-size:13px; color:#555; margin-bottom:8px; }
+.prog-top strong { color:#1D9E75; }
+.prog-bar { height:12px; background:#eee; border-radius:10px; overflow:hidden; margin-bottom:14px; }
+.prog-fill { height:100%; background:#1D9E75; border-radius:10px; transition:width .6s; }
+.vote-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.vote-box { border-radius:8px; padding:14px; text-align:center; }
+.vote-box.laad  { background:#e8f4fd; border:1px solid #90caf9; }
+.vote-box.cohen { background:#fef3e2; border:1px solid #ffcc80; }
+.vote-box .vnum { font-size:28px; font-weight:bold; }
+.vote-box.laad  .vnum { color:#1565C0; }
+.vote-box.cohen .vnum { color:#E65100; }
+.vote-box .vlabel { font-size:12px; color:#888; margin-top:4px; }
+.grid-label { font-size:13px; font-weight:bold; margin-bottom:10px; color:#333; }
+.legend { display:flex; gap:10px; font-size:11px; color:#888; margin-bottom:10px; flex-wrap:wrap; }
+.legend span { display:flex; align-items:center; gap:4px; }
+.apt-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(40px,1fr)); gap:5px; }
+.apt-cell { height:38px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; }
+.apt-laad    { background:#e8f4fd; color:#1565C0; border:1px solid #90caf9; }
+.apt-cohen   { background:#fef3e2; color:#E65100; border:1px solid #ffcc80; }
+.apt-unsigned{ background:#f5f5f5; color:#ccc;    border:1px dashed #e0e0e0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="no-print" style="text-align:center;padding:8px 0 4px;font-size:11px;color:#bbb;font-family:Arial;letter-spacing:0.5px">✦ נוצר בחיבה ע״י צחי דניאל, דירה 34 😉 ✦</div>
+
+<div class="doc-header" id="docHeader">
+  <h2>בחירת חברת בדק לבניין – טבלת חתימות דיירים</h2>
+  <p>בהמשך לבדיקת ההצעות שהתקבלו עבור בדק הבניין, מצורפת טבלת בחירה בין החברות.</p>
+  <p style="margin-top:6px">נשמח שכל בעל דירה יסמן את החברה המועדפת עליו ויחתום.</p>
+  <div class="companies">
+    <div class="company-info">🏗️ לעד הנדסה</div>
+    <div class="company-info">🔧 כהן הנדסה</div>
+  </div>
+</div>
+
+<div class="form-card" id="formCard">
+  <h2>סמן/י העדפה וחתום/י</h2>
+
+  <div class="choice-section">
+    <label>בחירת חברה *</label>
+    <div class="choice-cards">
+      <div class="choice-card" id="card-laad" onclick="selectCompany('laad')">
+        <input type="radio" name="company" value="laad" id="r-laad"/>
+        <div class="co-icon">🏗️</div>
+        <div class="co-name">לעד הנדסה</div>
+      </div>
+      <div class="choice-card" id="card-cohen" onclick="selectCompany('cohen')">
+        <input type="radio" name="company" value="cohen" id="r-cohen"/>
+        <div class="co-icon">🔧</div>
+        <div class="co-name">כהן הנדסה</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="field"><label>מספר דירה *</label><input type="text" id="f_apt" placeholder="12" inputmode="numeric"/></div>
+    <div class="field"><label>שם בעל הדירה *</label><input type="text" id="f_name" placeholder="ישראל ישראלי"/></div>
+  </div>
+  <div class="field"><label>טלפון *</label><input type="tel" id="f_phone" placeholder="05X-XXXXXXX" autocomplete="tel"/></div>
+
+  <div class="sig-section">
+    <label>חתימה ידנית *</label>
+    <canvas id="sigCanvas"></canvas>
+    <button class="sig-clear" onclick="clearSig()">נקה חתימה</button>
+  </div>
+
+  <div id="formErr" class="err" style="display:none"></div>
+  <button class="btn-submit" id="submitBtn" onclick="submitForm()">שלח/י הצבעה ✓</button>
+  <div class="loading" id="loadingMsg">בודק... אנא המתן</div>
+</div>
+
+<div class="success-screen" id="successScreen">
+  <div class="check">✅</div>
+  <h2>תודה! הצבעתך נרשמה</h2>
+  <p id="successMsg"></p>
+</div>
+
+<div class="no-print progress-section" id="progressSection">
+  <div class="prog-top">
+    <span>התקדמות איסוף הצבעות</span>
+    <strong id="fProgLabel">טוען...</strong>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="fProgFill" style="width:0%"></div></div>
+  <div class="signed-row">
+    <div class="signed-box yes">
+      <div class="snum" id="fSignedCount">—</div>
+      <div class="slabel">✅ הצביעו</div>
+    </div>
+    <div class="signed-box no">
+      <div class="snum" id="fUnsignedCount">—</div>
+      <div class="slabel">⏳ טרם הצביעו</div>
+    </div>
+  </div>
+  <div class="vote-summary">
+    <div class="vote-box laad">
+      <div class="vnum" id="fLaadCount">—</div>
+      <div class="vlabel">לעד הנדסה</div>
+    </div>
+    <div class="vote-box cohen">
+      <div class="vnum" id="fCohenCount">—</div>
+      <div class="vlabel">כהן הנדסה</div>
+    </div>
+  </div>
+  <div class="grid-label">מפת דירות</div>
+  <div class="legend">
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#e8f4fd;border:1px solid #90caf9"></div> לעד הנדסה</span>
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#fef3e2;border:1px solid #ffcc80"></div> כהן הנדסה</span>
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#f5f5f5;border:1px dashed #e0e0e0"></div> טרם הצביע</span>
+  </div>
+  <div class="apt-grid" id="fAptGrid"></div>
+</div>
+
+</div>
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcZ6f-DOb09o1-z7BUNSS-0Z6UftLGyndUX5co2HZJzwDd1jdMVyeP8gqsmBMNYmV4KQ/exec';
+const SHEET      = 'הצבעות';
+const TOTAL      = 52;
+let selectedCompany = null;
+
+function selectCompany(val) {
+  selectedCompany = val;
+  document.getElementById('card-laad').classList.toggle('selected',  val==='laad');
+  document.getElementById('card-cohen').classList.toggle('selected', val==='cohen');
+}
+
+const canvas = document.getElementById('sigCanvas');
+const ctx    = canvas.getContext('2d');
+let drawing=false, hasSig=false;
+function resizeCanvas(){ const dpr=window.devicePixelRatio||1,r=canvas.getBoundingClientRect(); canvas.width=r.width*dpr; canvas.height=r.height*dpr; ctx.scale(dpr,dpr); ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round'; }
+setTimeout(resizeCanvas,100); window.addEventListener('resize',resizeCanvas);
+function getPos(e){ const r=canvas.getBoundingClientRect(); if(e.touches) return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top}; return{x:e.clientX-r.left,y:e.clientY-r.top}; }
+canvas.addEventListener('mousedown', e=>{drawing=true;const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+canvas.addEventListener('mousemove', e=>{if(!drawing)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;});
+canvas.addEventListener('mouseup',   ()=>drawing=false);
+canvas.addEventListener('mouseleave',()=>drawing=false);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+canvas.addEventListener('touchmove', e=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;},{passive:false});
+canvas.addEventListener('touchend',  ()=>drawing=false);
+function clearSig(){ ctx.clearRect(0,0,canvas.width,canvas.height); hasSig=false; }
+function getSigDataURL(){ const s=document.createElement('canvas'); s.width=300; s.height=90; s.getContext('2d').drawImage(canvas,0,0,300,90); return s.toDataURL('image/png'); }
+
+function submitForm() {
+  const apt   = document.getElementById('f_apt').value.trim();
+  const name  = document.getElementById('f_name').value.trim();
+  const phone = document.getElementById('f_phone').value.trim();
+  const err   = document.getElementById('formErr');
+  if (!selectedCompany){ err.style.display='block'; err.textContent='יש לבחור חברה'; return; }
+  if (!apt||!name||!phone){ err.style.display='block'; err.textContent='יש למלא את כל השדות'; return; }
+  if (!hasSig){ err.style.display='block'; err.textContent='יש לחתום בשדה החתימה'; return; }
+  err.style.display='none';
+  const btn=document.getElementById('submitBtn'), loading=document.getElementById('loadingMsg');
+  btn.disabled=true; loading.style.display='block';
+
+  fetch(SCRIPT_URL+'?action=getAll&sheet='+encodeURIComponent(SHEET))
+    .then(r=>r.json())
+    .then(data=>{
+      const signedApts=new Set((data.entries||[]).map(e=>parseInt(e.apt)).filter(n=>!isNaN(n)));
+      if(signedApts.has(parseInt(apt))){ err.style.display='block'; err.textContent='⚠️ דירה '+apt+' כבר הצביעה. לפניות: פנה/י למנהל הבניין.'; btn.disabled=false; loading.style.display='none'; return; }
+      const payload={apt,name,phone,company:selectedCompany,sig:getSigDataURL(),sheet:SHEET,ts:new Date().toLocaleString('he-IL')};
+      loading.textContent='שולח... אנא המתן';
+      fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.status==='ok'){
+            document.getElementById('formCard').style.display='none';
+            document.getElementById('docHeader').style.display='none';
+            document.getElementById('successMsg').textContent='בחרת ב־'+(selectedCompany==='laad'?'לעד הנדסה 🏗️':'כהן הנדסה 🔧');
+            document.getElementById('successScreen').style.display='block';
+            loadProgress();
+          } else throw new Error();
+        })
+        .catch(()=>{ err.style.display='block'; err.textContent='שגיאה בשליחה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
+    })
+    .catch(()=>{ err.style.display='block'; err.textContent='שגיאה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
+}
+
+function loadProgress() {
+  fetch(SCRIPT_URL+'?action=getAll&sheet='+encodeURIComponent(SHEET))
+    .then(r=>r.json())
+    .then(data=>{
+      const entries=data.entries||[];
+      const aptMap={};
+      entries.forEach(e=>{ const n=parseInt(e.apt); if(!isNaN(n)) aptMap[n]=e.company; });
+      const signedApts=new Set(Object.keys(aptMap).map(Number));
+      const laadCount =entries.filter(e=>e.company==='laad').length;
+      const cohenCount=entries.filter(e=>e.company==='cohen').length;
+      const pct=Math.round(signedApts.size/TOTAL*100);
+      document.getElementById('fProgLabel').textContent =signedApts.size+' / '+TOTAL+' דירות ('+pct+'%)';
+      document.getElementById('fProgFill').style.width  =pct+'%';
+      document.getElementById('fLaadCount').textContent =laadCount;
+      document.getElementById('fCohenCount').textContent=cohenCount;
+      const grid=document.getElementById('fAptGrid'); grid.innerHTML='';
+      for(let i=1;i<=TOTAL;i++){
+        const cell=document.createElement('div');
+        const co=aptMap[i];
+        cell.className='apt-cell '+(co==='laad'?'apt-laad':co==='cohen'?'apt-cohen':'apt-unsigned');
+        cell.textContent=i;
+        grid.appendChild(cell);
+      }
+    })
+    .catch(()=>{ document.getElementById('fProgLabel').textContent=''; });
+}
+loadProgress();
+</script>
+</body>
+</html>
