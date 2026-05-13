@@ -139,11 +139,11 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
   <div class="signed-row">
     <div class="signed-box yes">
       <div class="snum" id="fSignedCount">—</div>
-      <div class="slabel">✅ הצביעו</div>
+      <div class="slabel">הצביעו</div>
     </div>
     <div class="signed-box no">
       <div class="snum" id="fUnsignedCount">—</div>
-      <div class="slabel">⏳ טרם הצביעו</div>
+      <div class="slabel">טרם הצביעו</div>
     </div>
   </div>
   <div class="vote-summary">
@@ -192,6 +192,11 @@ canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p
 canvas.addEventListener('touchmove', e=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();hasSig=true;},{passive:false});
 canvas.addEventListener('touchend',  ()=>drawing=false);
 function clearSig(){ ctx.clearRect(0,0,canvas.width,canvas.height); hasSig=false; }
+function isSigEmpty() {
+  const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  for (let i = 3; i < px.length; i += 4) { if (px[i] > 0) return false; }
+  return true;
+}
 function getSigDataURL(){ const s=document.createElement('canvas'); s.width=300; s.height=90; s.getContext('2d').drawImage(canvas,0,0,300,90); return s.toDataURL('image/png'); }
 
 function submitForm() {
@@ -203,7 +208,7 @@ function submitForm() {
   if (!apt){ err.style.display='block'; err.textContent='יש למלא מספר דירה'; return; }
   if (!name){ err.style.display='block'; err.textContent='יש למלא שם בעל הדירה'; return; }
   if (!phone){ err.style.display='block'; err.textContent='יש למלא טלפון'; return; }
-  if (!hasSig){ err.style.display='block'; err.textContent='יש לחתום בשדה החתימה'; return; }
+  if (isSigEmpty()){ err.style.display='block'; err.textContent='יש לחתום בשדה החתימה'; return; }
   err.style.display='none';
   const btn=document.getElementById('submitBtn'), loading=document.getElementById('loadingMsg');
   btn.disabled=true; loading.style.display='block';
