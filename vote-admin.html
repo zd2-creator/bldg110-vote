@@ -70,7 +70,16 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
 .loading { text-align:center; padding:50px; color:#888; font-size:14px; }
 .err-msg  { text-align:center; padding:50px; color:#c00; font-size:14px; }
 
+.print-header { display:none; }
+.print-summary { display:none; }
 @media print {
+  .print-header { display:block !important; margin-bottom:14px; font-size:14px; line-height:1.8; }
+  .print-header h2 { font-size:16px; font-weight:bold; margin-bottom:6px; }
+  .print-summary { display:block !important; margin-bottom:12px; border:1px solid #333; border-radius:4px; padding:10px 14px; font-size:13px; }
+  .print-summary table { width:100%; border-collapse:collapse; font-size:13px; }
+  .print-summary td { padding:4px 8px; }
+  .print-summary .winner { font-weight:bold; font-size:14px; }
+
   * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   body { background:#fff; }
   .topbar,.no-print,.cards-list { display:none !important; }
@@ -133,6 +142,24 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
 
   <!-- Mobile cards -->
   <div class="cards-list" id="cardsList"></div>
+
+  <!-- Print header (only shows in PDF) -->
+  <div class="print-header">
+    <h2>בחירת חברת בדק לבניין 110 – תוצאות הצבעה</h2>
+    <p>בהמשך לבדיקת ההצעות שהתקבלו עבור בדק הבניין, מצורפת טבלת בחירה בין החברות: לעד הנדסה | כהן הנדסה</p>
+  </div>
+
+  <!-- Print summary -->
+  <div class="print-summary">
+    <table>
+      <tr>
+        <td>🏗️ לעד הנדסה:</td><td><strong id="printLaad">—</strong> קולות</td>
+        <td style="padding-right:20px">🔧 כהן הנדסה:</td><td><strong id="printCohen">—</strong> קולות</td>
+        <td style="padding-right:20px">סה״כ הצביעו:</td><td><strong id="printTotal">—</strong></td>
+      </tr>
+      <tr><td colspan="6" class="winner" id="printWinner"></td></tr>
+    </table>
+  </div>
 
   <!-- Print table -->
   <table class="print-table">
@@ -204,6 +231,17 @@ function render(entries) {
   document.getElementById('stTotal').textContent  = uniqueCount;
   document.getElementById('stLaad').textContent   = laadCount;
   document.getElementById('stCohen').textContent  = cohenCount;
+
+  // Fill print summary
+  document.getElementById('printLaad').textContent  = laadCount;
+  document.getElementById('printCohen').textContent = cohenCount;
+  document.getElementById('printTotal').textContent = uniqueCount;
+  let winnerText = '';
+  if (!total) winnerText = '';
+  else if (laadCount > cohenCount) winnerText = '✓ נבחרה: לעד הנדסה (רוב של ' + laadCount + ' מתוך ' + total + ' הצבעות)';
+  else if (cohenCount > laadCount) winnerText = '✓ נבחרה: כהן הנדסה (רוב של ' + cohenCount + ' מתוך ' + total + ' הצבעות)';
+  else winnerText = 'תיקו: ' + laadCount + ' קולות לכל חברה';
+  document.getElementById('printWinner').textContent = winnerText;
 
   const laadPct  = total ? Math.round(laadCount/total*100)  : 0;
   const cohenPct = total ? Math.round(cohenCount/total*100) : 0;
