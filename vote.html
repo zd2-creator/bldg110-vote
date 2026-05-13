@@ -108,10 +108,10 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
   </div>
 
   <div class="grid2">
-    <div class="field"><label>מספר דירה *</label><input type="text" id="f_apt" placeholder="12" inputmode="numeric"/></div>
-    <div class="field"><label>שם בעל הדירה *</label><input type="text" id="f_name" placeholder="ישראל ישראלי"/></div>
+    <div class="field"><label>מספר דירה *</label><input type="text" id="f_apt" placeholder="12" inputmode="numeric" required/></div>
+    <div class="field"><label>שם בעל הדירה *</label><input type="text" id="f_name" placeholder="ישראל ישראלי" required/></div>
   </div>
-  <div class="field"><label>טלפון *</label><input type="tel" id="f_phone" placeholder="05X-XXXXXXX" autocomplete="tel"/></div>
+  <div class="field"><label>טלפון *</label><input type="tel" id="f_phone" placeholder="05X-XXXXXXX" autocomplete="tel" required/></div>
 
   <div class="sig-section">
     <label>חתימה ידנית *</label>
@@ -200,7 +200,9 @@ function submitForm() {
   const phone = document.getElementById('f_phone').value.trim();
   const err   = document.getElementById('formErr');
   if (!selectedCompany){ err.style.display='block'; err.textContent='יש לבחור חברה'; return; }
-  if (!apt||!name||!phone){ err.style.display='block'; err.textContent='יש למלא את כל השדות'; return; }
+  if (!apt){ err.style.display='block'; err.textContent='יש למלא מספר דירה'; return; }
+  if (!name){ err.style.display='block'; err.textContent='יש למלא שם בעל הדירה'; return; }
+  if (!phone){ err.style.display='block'; err.textContent='יש למלא טלפון'; return; }
   if (!hasSig){ err.style.display='block'; err.textContent='יש לחתום בשדה החתימה'; return; }
   err.style.display='none';
   const btn=document.getElementById('submitBtn'), loading=document.getElementById('loadingMsg');
@@ -240,10 +242,12 @@ function loadProgress() {
       const laadCount =entries.filter(e=>e.company==='laad').length;
       const cohenCount=entries.filter(e=>e.company==='cohen').length;
       const pct=Math.round(signedApts.size/TOTAL*100);
-      document.getElementById('fProgLabel').textContent =signedApts.size+' / '+TOTAL+' דירות ('+pct+'%)';
-      document.getElementById('fProgFill').style.width  =pct+'%';
-      document.getElementById('fLaadCount').textContent =laadCount;
-      document.getElementById('fCohenCount').textContent=cohenCount;
+      document.getElementById('fProgLabel').textContent  = signedApts.size+' / '+TOTAL+' דירות ('+pct+'%)';
+      document.getElementById('fProgFill').style.width   = pct+'%';
+      document.getElementById('fLaadCount').textContent  = laadCount;
+      document.getElementById('fCohenCount').textContent = cohenCount;
+      document.getElementById('fSignedCount').textContent   = signedApts.size;
+      document.getElementById('fUnsignedCount').textContent = TOTAL - signedApts.size;
       const grid=document.getElementById('fAptGrid'); grid.innerHTML='';
       for(let i=1;i<=TOTAL;i++){
         const cell=document.createElement('div');
