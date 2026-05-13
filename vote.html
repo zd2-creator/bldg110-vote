@@ -71,6 +71,49 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
 .apt-laad    { background:#e8f4fd; color:#1565C0; border:1px solid #90caf9; }
 .apt-cohen   { background:#fef3e2; color:#E65100; border:1px solid #ffcc80; }
 .apt-unsigned{ background:#f5f5f5; color:#ccc;    border:1px dashed #e0e0e0; }
+
+/* ── Majority celebration ── */
+.majority-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.55); z-index:1000;
+  align-items:center; justify-content:center;
+  animation:fadeInBg .4s ease;
+}
+.majority-overlay.show { display:flex; }
+@keyframes fadeInBg { from{opacity:0} to{opacity:1} }
+.majority-card {
+  background:#fff; border-radius:20px; padding:32px 28px;
+  text-align:center; max-width:360px; width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:popIn .5s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+@keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+.majority-stamp {
+  width:76px; height:76px; border-radius:50%;
+  background:linear-gradient(135deg,#1D9E75,#0d6e52);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 14px; font-size:34px;
+  box-shadow:0 4px 20px rgba(29,158,117,0.4);
+  animation:pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 4px 20px rgba(29,158,117,0.4)} 50%{box-shadow:0 4px 30px rgba(29,158,117,0.7)} }
+.majority-title { font-size:20px; font-weight:bold; color:#111; margin-bottom:8px; }
+.majority-sub   { font-size:13px; color:#666; margin-bottom:16px; line-height:1.6; }
+.majority-winner {
+  background:linear-gradient(135deg,#e0f5ee,#c8edd9);
+  border:2px solid #1D9E75; border-radius:10px;
+  padding:12px 16px; margin-bottom:16px;
+  font-size:15px; font-weight:bold; color:#0d6e52;
+}
+.majority-stats { font-size:14px; color:#555; margin-bottom:18px; }
+.majority-close {
+  background:#1D9E75; color:#fff; border:none;
+  border-radius:10px; padding:12px 28px;
+  font-size:15px; font-weight:bold; cursor:pointer;
+  font-family:Arial; width:100%;
+}
+.majority-close:hover { background:#177a5c; }
+#fireworksCanvas { position:fixed; inset:0; pointer-events:none; z-index:999; display:none; }
 </style>
 </head>
 <body>
@@ -155,6 +198,20 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
   <div class="apt-grid" id="fAptGrid"></div>
 </div>
 
+
+<!-- Majority celebration -->
+<div class="majority-overlay" id="majorityOverlay">
+  <div class="majority-card">
+    <div class="majority-stamp">⚖️</div>
+    <div class="majority-title">הושג רוב חוקי!</div>
+    <div class="majority-sub">על פי תקנון הבית המשותף,<br>נדרש רוב של 66% לבחירת חברת בדק</div>
+    <div class="majority-winner" id="majorityWinnerText"></div>
+    <div class="majority-stats" id="majorityStats"></div>
+    <button class="majority-close" onclick="closeMajority()">הבנתי ✓</button>
+  </div>
+</div>
+<canvas id="fireworksCanvas"></canvas>
+
 </div>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcZ6f-DOb09o1-z7BUNSS-0Z6UftLGyndUX5co2HZJzwDd1jdMVyeP8gqsmBMNYmV4KQ/exec';
@@ -226,6 +283,81 @@ function submitForm() {
     .catch(()=>{ err.style.display='block'; err.textContent='שגיאה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
 }
 
+
+
+let majorityChecked = false;
+
+function checkMajority(laadCount, cohenCount) {
+  const total = laadCount + cohenCount;
+  if (total < 5 || majorityChecked) return;
+  const laadPct  = laadCount  / total * 100;
+  const cohenPct = cohenCount / total * 100;
+  const winner   = laadPct >= 66 ? 'laad' : cohenPct >= 66 ? 'cohen' : null;
+  if (!winner) return;
+  majorityChecked = true;
+
+  // Show once per 24h
+  const key      = 'majority_shown_ts';
+  const lastShown = parseInt(localStorage.getItem(key) || '0');
+  const now       = Date.now();
+  if (now - lastShown < 24 * 60 * 60 * 1000) return;
+  localStorage.setItem(key, now);
+
+  const name = winner === 'laad' ? '🏗️ לעד הנדסה' : '🔧 כהן הנדסה';
+  const pct  = Math.round(winner === 'laad' ? laadPct : cohenPct);
+  const cnt  = winner === 'laad' ? laadCount : cohenCount;
+  document.getElementById('majorityWinnerText').textContent = name + ' נבחרה!';
+  document.getElementById('majorityStats').textContent      = pct + '% מהקולות — ' + cnt + ' מתוך ' + total + ' דיירים';
+  setTimeout(() => {
+    document.getElementById('majorityOverlay').classList.add('show');
+    startFireworks();
+  }, 700);
+}
+
+function closeMajority() {
+  document.getElementById('majorityOverlay').classList.remove('show');
+  stopFireworks();
+}
+
+const fwCanvas = document.getElementById('fireworksCanvas');
+const fwCtx    = fwCanvas.getContext('2d');
+let fwRunning  = false, fwParticles = [];
+
+function startFireworks() {
+  fwCanvas.style.display = 'block';
+  fwCanvas.width  = window.innerWidth;
+  fwCanvas.height = window.innerHeight;
+  fwRunning = true;
+  fwLoop();
+  setTimeout(stopFireworks, 4500);
+}
+function stopFireworks() {
+  fwRunning = false;
+  setTimeout(() => { fwCanvas.style.display='none'; fwParticles=[]; }, 1200);
+}
+function fwLoop() {
+  if (!fwRunning && fwParticles.length === 0) return;
+  fwCtx.fillStyle = 'rgba(0,0,0,0.13)';
+  fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+  if (fwRunning && Math.random() < 0.22) {
+    const x = Math.random() * fwCanvas.width;
+    const y = Math.random() * fwCanvas.height * 0.55;
+    const colors = ['#1D9E75','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#fff','#a8e6cf'];
+    const color  = colors[Math.floor(Math.random()*colors.length)];
+    for (let i = 0; i < 55; i++) {
+      const angle = (Math.PI*2/55)*i, speed = 2+Math.random()*4;
+      fwParticles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,alpha:1,color,size:2+Math.random()*2});
+    }
+  }
+  fwParticles = fwParticles.filter(p=>p.alpha>0.02);
+  fwParticles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.09; p.alpha-=0.017;
+    fwCtx.globalAlpha=p.alpha; fwCtx.fillStyle=p.color;
+    fwCtx.beginPath(); fwCtx.arc(p.x,p.y,p.size,0,Math.PI*2); fwCtx.fill();
+  });
+  fwCtx.globalAlpha=1;
+  requestAnimationFrame(fwLoop);
+}
 function loadProgress() {
   fetch(SCRIPT_URL+'?action=getAll&sheet='+encodeURIComponent(SHEET))
     .then(r=>r.json())
@@ -241,6 +373,7 @@ function loadProgress() {
       document.getElementById('fProgFill').style.width   = pct+'%';
       document.getElementById('fLaadCount').textContent  = laadCount;
       document.getElementById('fCohenCount').textContent = cohenCount;
+      checkMajority(laadCount, cohenCount);
       const grid=document.getElementById('fAptGrid'); grid.innerHTML='';
       for(let i=1;i<=TOTAL;i++){
         const cell=document.createElement('div');

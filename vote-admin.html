@@ -70,6 +70,75 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
 .loading { text-align:center; padding:50px; color:#888; font-size:14px; }
 .err-msg  { text-align:center; padding:50px; color:#c00; font-size:14px; }
 
+
+/* ── Majority celebration ── */
+.majority-overlay {
+  display:none;
+  position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  z-index:1000; align-items:center; justify-content:center;
+  animation: fadeInBg .4s ease;
+}
+.majority-overlay.show { display:flex; }
+@keyframes fadeInBg { from{opacity:0} to{opacity:1} }
+
+.majority-card {
+  background:#fff; border-radius:20px; padding:36px 32px;
+  text-align:center; max-width:380px; width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation: popIn .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position:relative; overflow:hidden;
+}
+@keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+.majority-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(29,158,117,0.08) 0%, rgba(29,158,117,0) 60%);
+  pointer-events:none;
+}
+
+.majority-stamp {
+  width:80px; height:80px; border-radius:50%;
+  background:linear-gradient(135deg,#1D9E75,#0d6e52);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 16px; font-size:36px;
+  box-shadow:0 4px 20px rgba(29,158,117,0.4);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 4px 20px rgba(29,158,117,0.4)} 50%{box-shadow:0 4px 30px rgba(29,158,117,0.7)} }
+
+.majority-title {
+  font-size:22px; font-weight:bold; color:#111;
+  margin-bottom:8px; line-height:1.3;
+}
+.majority-sub {
+  font-size:14px; color:#555; margin-bottom:20px; line-height:1.6;
+}
+.majority-winner {
+  background:linear-gradient(135deg,#e0f5ee,#c8edd9);
+  border:2px solid #1D9E75; border-radius:12px;
+  padding:14px 20px; margin-bottom:20px;
+  font-size:16px; font-weight:bold; color:#0d6e52;
+}
+.majority-pct {
+  font-size:36px; font-weight:bold; color:#1D9E75;
+  display:block; margin-bottom:2px;
+}
+.majority-close {
+  background:#1D9E75; color:#fff; border:none;
+  border-radius:10px; padding:12px 28px;
+  font-size:15px; font-weight:bold; cursor:pointer;
+  font-family:Arial; width:100%;
+  transition:background .2s;
+}
+.majority-close:hover { background:#177a5c; }
+
+/* Fireworks canvas */
+#fireworksCanvas {
+  position:fixed; inset:0; pointer-events:none;
+  z-index:999; display:none;
+}
+
 .print-header { display:none; }
 .print-summary { display:none; }
 @media print {
@@ -175,6 +244,20 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
     </thead>
     <tbody id="printBody"></tbody>
   </table>
+
+
+  <!-- Majority celebration -->
+  <div class="majority-overlay no-print" id="majorityOverlay">
+    <div class="majority-card">
+      <div class="majority-stamp">⚖️</div>
+      <div class="majority-title">הושג רוב חוקי!</div>
+      <div class="majority-sub">על פי תקנון הבית המשותף,<br>נדרש רוב של 66% לבחירת חברת בדק</div>
+      <div class="majority-winner" id="majorityWinnerText">—</div>
+      <div class="majority-sub" style="margin-bottom:12px" id="majorityStats"></div>
+      <button class="majority-close" onclick="closeMajority()">אישור ✓</button>
+    </div>
+  </div>
+  <canvas id="fireworksCanvas"></canvas>
 
 </div>
 
@@ -300,6 +383,83 @@ function render(entries) {
 }
 
 loadData();
+
+let fireworksShown = false;
+
+function checkMajority(laadCount, cohenCount, total) {
+  if (total < 5) return; // wait for meaningful votes
+  const laadPct  = laadCount  / total * 100;
+  const cohenPct = cohenCount / total * 100;
+  const winner   = laadPct >= 66 ? 'laad' : cohenPct >= 66 ? 'cohen' : null;
+  if (!winner || fireworksShown) return;
+  fireworksShown = true;
+  const winnerName = winner === 'laad' ? '🏗️ לעד הנדסה' : '🔧 כהן הנדסה';
+  const winnerPct  = winner === 'laad' ? laadPct : cohenPct;
+  document.getElementById('majorityWinnerText').textContent = winnerName + ' נבחרה!';
+  document.getElementById('majorityStats').textContent = Math.round(winnerPct) + '% מהקולות (' + (winner==='laad'?laadCount:cohenCount) + ' מתוך ' + total + ')';
+  setTimeout(() => {
+    document.getElementById('majorityOverlay').classList.add('show');
+    startFireworks();
+  }, 600);
+}
+
+function closeMajority() {
+  document.getElementById('majorityOverlay').classList.remove('show');
+  stopFireworks();
+}
+
+// ── Fireworks ────────────────────────────
+const fwCanvas  = document.getElementById('fireworksCanvas');
+const fwCtx     = fwCanvas.getContext('2d');
+let   fwRunning = false;
+let   fwParticles = [];
+let   fwRaf;
+
+function startFireworks() {
+  fwCanvas.style.display = 'block';
+  fwCanvas.width  = window.innerWidth;
+  fwCanvas.height = window.innerHeight;
+  fwRunning = true;
+  fwLoop();
+  // Auto-stop after 4s
+  setTimeout(stopFireworks, 4000);
+}
+
+function stopFireworks() {
+  fwRunning = false;
+  setTimeout(() => { fwCanvas.style.display = 'none'; fwParticles = []; }, 1000);
+}
+
+function fwLoop() {
+  if (!fwRunning && fwParticles.length === 0) return;
+  fwCtx.fillStyle = 'rgba(0,0,0,0.15)';
+  fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+
+  if (fwRunning && Math.random() < 0.25) {
+    const x = Math.random() * fwCanvas.width;
+    const y = Math.random() * fwCanvas.height * 0.6;
+    const colors = ['#1D9E75','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#fff'];
+    const color  = colors[Math.floor(Math.random()*colors.length)];
+    for (let i = 0; i < 60; i++) {
+      const angle = (Math.PI * 2 / 60) * i;
+      const speed = 2 + Math.random() * 4;
+      fwParticles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, alpha:1, color, size: 2+Math.random()*2 });
+    }
+  }
+
+  fwParticles = fwParticles.filter(p => p.alpha > 0.02);
+  fwParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.alpha -= 0.018;
+    fwCtx.globalAlpha = p.alpha;
+    fwCtx.fillStyle   = p.color;
+    fwCtx.beginPath();
+    fwCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    fwCtx.fill();
+  });
+  fwCtx.globalAlpha = 1;
+  fwRaf = requestAnimationFrame(fwLoop);
+}
+
 </script>
 </body>
 </html>
