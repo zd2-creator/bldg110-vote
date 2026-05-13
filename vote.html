@@ -290,24 +290,23 @@ let majorityChecked = false;
 function checkMajority(laadCount, cohenCount) {
   const total = laadCount + cohenCount;
   if (total < 5 || majorityChecked) return;
-  const laadPct  = laadCount  / total * 100;
-  const cohenPct = cohenCount / total * 100;
-  const winner   = laadPct >= 66 ? 'laad' : cohenPct >= 66 ? 'cohen' : null;
+  const THRESHOLD = Math.ceil(52 * 0.66); // 35 דירות
+  const winner = laadCount >= THRESHOLD ? 'laad' : cohenCount >= THRESHOLD ? 'cohen' : null;
   if (!winner) return;
   majorityChecked = true;
 
   // Show once per 24h
-  const key      = 'majority_shown_ts';
+  const key       = 'majority_shown_ts';
   const lastShown = parseInt(localStorage.getItem(key) || '0');
   const now       = Date.now();
   if (now - lastShown < 24 * 60 * 60 * 1000) return;
   localStorage.setItem(key, now);
 
-  const name = winner === 'laad' ? '🏗️ לעד הנדסה' : '🔧 כהן הנדסה';
-  const pct  = Math.round(winner === 'laad' ? laadPct : cohenPct);
   const cnt  = winner === 'laad' ? laadCount : cohenCount;
+  const pct  = Math.round(cnt / 52 * 100);
+  const name = winner === 'laad' ? '🏗️ לעד הנדסה' : '🔧 כהן הנדסה';
   document.getElementById('majorityWinnerText').textContent = name + ' נבחרה!';
-  document.getElementById('majorityStats').textContent      = pct + '% מהקולות — ' + cnt + ' מתוך ' + total + ' דיירים';
+  document.getElementById('majorityStats').textContent      = cnt + ' מתוך 52 דירות (' + pct + '%)';
   setTimeout(() => {
     document.getElementById('majorityOverlay').classList.add('show');
     startFireworks();
