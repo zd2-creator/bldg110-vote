@@ -427,14 +427,16 @@ function scrollToForm() {
 function checkFabVisibility() {
   if (!formCard) return;
   const rect = formCard.getBoundingClientRect();
-  if (rect.top < window.innerHeight * 0.8) {
+  // Hide FAB only when form top is clearly in view (top 40% of screen)
+  if (rect.top < 80) {
     fabBtn.classList.add('hidden');
   } else {
     fabBtn.classList.remove('hidden');
   }
 }
 window.addEventListener('scroll', checkFabVisibility, { passive: true });
-setTimeout(checkFabVisibility, 500);
+// Delay first check so button shows on load
+setTimeout(checkFabVisibility, 1500);
 
 </script>
 </body>
