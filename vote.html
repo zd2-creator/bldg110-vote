@@ -134,6 +134,31 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
   </div>
 </div>
 
+<div class="no-print progress-section" id="progressSection">
+  <div class="prog-top">
+    <span>התקדמות איסוף הצבעות</span>
+    <strong id="fProgLabel">טוען...</strong>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="fProgFill" style="width:0%"></div></div>
+  <div class="vote-summary">
+    <div class="vote-box laad">
+      <div class="vnum" id="fLaadCount">—</div>
+      <div class="vlabel">לעד הנדסה</div>
+    </div>
+    <div class="vote-box cohen">
+      <div class="vnum" id="fCohenCount">—</div>
+      <div class="vlabel">כהן הנדסה</div>
+    </div>
+  </div>
+  <div class="grid-label">מפת דירות</div>
+  <div class="legend">
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#e8f4fd;border:1px solid #90caf9"></div> לעד הנדסה</span>
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#fef3e2;border:1px solid #ffcc80"></div> כהן הנדסה</span>
+    <span><div style="width:12px;height:12px;border-radius:3px;background:#f5f5f5;border:1px dashed #e0e0e0"></div> טרם הצביע</span>
+  </div>
+  <div class="apt-grid" id="fAptGrid"></div>
+</div>
+
 <div class="form-card" id="formCard">
   <h2>סמן/י העדפה וחתום/י</h2>
 
@@ -176,30 +201,7 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
   <p id="successMsg"></p>
 </div>
 
-<div class="no-print progress-section" id="progressSection">
-  <div class="prog-top">
-    <span>התקדמות איסוף הצבעות</span>
-    <strong id="fProgLabel">טוען...</strong>
-  </div>
-  <div class="prog-bar"><div class="prog-fill" id="fProgFill" style="width:0%"></div></div>
-  <div class="vote-summary">
-    <div class="vote-box laad">
-      <div class="vnum" id="fLaadCount">—</div>
-      <div class="vlabel">לעד הנדסה</div>
-    </div>
-    <div class="vote-box cohen">
-      <div class="vnum" id="fCohenCount">—</div>
-      <div class="vlabel">כהן הנדסה</div>
-    </div>
-  </div>
-  <div class="grid-label">מפת דירות</div>
-  <div class="legend">
-    <span><div style="width:12px;height:12px;border-radius:3px;background:#e8f4fd;border:1px solid #90caf9"></div> לעד הנדסה</span>
-    <span><div style="width:12px;height:12px;border-radius:3px;background:#fef3e2;border:1px solid #ffcc80"></div> כהן הנדסה</span>
-    <span><div style="width:12px;height:12px;border-radius:3px;background:#f5f5f5;border:1px dashed #e0e0e0"></div> טרם הצביע</span>
-  </div>
-  <div class="apt-grid" id="fAptGrid"></div>
-</div>
+
 
 
 <!-- Majority celebration -->
