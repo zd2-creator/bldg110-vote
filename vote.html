@@ -442,7 +442,8 @@ function scrollToForm() {
 window.addEventListener('scroll', function() {
   if (fabClicked) return;
   const rect = formCard.getBoundingClientRect();
-  if (rect.top < window.innerHeight) {
+  const formMid = rect.top + rect.height * 0.5;
+  if (formMid < window.innerHeight) {
     fabBtn.classList.add('hidden');
   } else {
     fabBtn.classList.remove('hidden');
