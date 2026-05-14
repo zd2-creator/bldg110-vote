@@ -430,25 +430,23 @@ loadProgress();
 
 const fabBtn   = document.getElementById('fabSign');
 const formCard = document.getElementById('formCard');
-let fabClicked = false;
+
+function hideFab() { fabBtn.classList.add('hidden'); }
 
 function scrollToForm() {
-  fabClicked = true;
-  fabBtn.classList.add('hidden');
+  hideFab();
   formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function checkFabVisibility() {
-  if (!formCard || fabClicked) return;
+window.addEventListener('scroll', function() {
   const rect = formCard.getBoundingClientRect();
-  if (rect.top < 80) {
-    fabBtn.classList.add('hidden');
-  } else {
-    fabBtn.classList.remove('hidden');
-  }
-}
-window.addEventListener('scroll', checkFabVisibility, { passive: true });
-setTimeout(checkFabVisibility, 1500);
+  if (rect.top < window.innerHeight) hideFab();
+}, { passive: true });
+
+setTimeout(function() {
+  const rect = formCard.getBoundingClientRect();
+  if (rect.top >= window.innerHeight) fabBtn.classList.remove('hidden');
+}, 1500);
 
 </script>
 </body>
