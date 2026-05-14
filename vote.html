@@ -317,6 +317,7 @@ function submitForm() {
             document.getElementById('docHeader').style.display='none';
             document.getElementById('successMsg').textContent='בחרת ב־'+(selectedCompany==='laad'?'לעד הנדסה 🏗️':'כהן הנדסה 🔧');
             document.getElementById('successScreen').style.display='block';
+            fabClicked = true; fabBtn.classList.add('hidden');
             loadProgress();
           } else throw new Error();
         })
@@ -430,20 +431,26 @@ loadProgress();
 
 const fabBtn   = document.getElementById('fabSign');
 const formCard = document.getElementById('formCard');
-
-function hideFab() { fabBtn.classList.add('hidden'); }
+let fabClicked = false;
 
 function scrollToForm() {
-  hideFab();
+  fabClicked = true;
+  fabBtn.classList.add('hidden');
   formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 window.addEventListener('scroll', function() {
+  if (fabClicked) return;
   const rect = formCard.getBoundingClientRect();
-  if (rect.top < window.innerHeight) hideFab();
+  if (rect.top < window.innerHeight) {
+    fabBtn.classList.add('hidden');
+  } else {
+    fabBtn.classList.remove('hidden');
+  }
 }, { passive: true });
 
 setTimeout(function() {
+  if (fabClicked) return;
   const rect = formCard.getBoundingClientRect();
   if (rect.top >= window.innerHeight) fabBtn.classList.remove('hidden');
 }, 1500);
