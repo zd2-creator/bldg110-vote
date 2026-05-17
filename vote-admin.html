@@ -25,6 +25,11 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
 .winner-banner.tie   { background:#f3e5f5; border:2px solid #ce93d8; color:#6A1B9A; }
 .winner-banner.none  { background:#f5f5f5; border:2px dashed #ccc;   color:#888; }
 .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px; }
+.admin-prog-wrap { background:#fff; border:1px solid #ddd; border-radius:8px; padding:14px 16px; margin-bottom:12px; }
+.admin-prog-top { display:flex; justify-content:space-between; font-size:13px; color:#555; margin-bottom:8px; }
+.admin-prog-top strong { color:#1D9E75; }
+.admin-prog-bar { height:12px; background:#eee; border-radius:10px; overflow:hidden; }
+.admin-prog-fill { height:100%; background:#1D9E75; border-radius:10px; transition:width .6s; }
 .stat-box { background:#fff; border:1px solid #ddd; border-radius:8px; padding:14px; text-align:center; }
 .stat-num { font-size:26px; font-weight:bold; }
 .stat-label { font-size:12px; color:#aaa; margin-top:2px; }
@@ -186,6 +191,13 @@ body { font-family:Arial, sans-serif; direction:rtl; background:#f0f2f5; }
       <div class="stat-box"><div class="stat-num" style="color:#1565C0" id="stLaad">0</div><div class="stat-label">לעד הנדסה</div></div>
       <div class="stat-box"><div class="stat-num" style="color:#E65100" id="stCohen">0</div><div class="stat-label">כהן הנדסה</div></div>
     </div>
+    <div class="admin-prog-wrap no-print">
+      <div class="admin-prog-top">
+        <span>התקדמות איסוף הצבעות</span>
+        <strong id="adminProgLabel">0 / 52 דירות (0%)</strong>
+      </div>
+      <div class="admin-prog-bar"><div class="admin-prog-fill" id="adminProgFill" style="width:0%"></div></div>
+    </div>
     <div class="vote-bars">
       <div class="vbar-row vbar-laad">
         <div class="vbar-top"><span>🏗️ לעד הנדסה</span><span id="laadPct">0%</span></div>
@@ -312,6 +324,9 @@ function render(entries) {
 
   document.getElementById('cntBadge').textContent = uniqueCount+' הצביעו';
   document.getElementById('stTotal').textContent  = uniqueCount;
+  const progPct = Math.round(uniqueCount / 52 * 100);
+  document.getElementById('adminProgLabel').textContent = uniqueCount + ' / 52 דירות (' + progPct + '%)';
+  document.getElementById('adminProgFill').style.width  = progPct + '%';
   document.getElementById('stLaad').textContent   = laadCount;
   document.getElementById('stCohen').textContent  = cohenCount;
 
