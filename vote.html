@@ -244,7 +244,7 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
 
 </div>
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcZ6f-DOb09o1-z7BUNSS-0Z6UftLGyndUX5co2HZJzwDd1jdMVyeP8gqsmBMNYmV4KQ/exec';
+const SCRIPT_URL = 'PASTE_APPS_SCRIPT_DEPLOYMENT_URL_HERE'; // כתובת ה-Web App אחרי פריסה מחדש
 const SHEET      = 'הצבעות';
 const TOTAL      = 52;
 let selectedCompany = null;
@@ -300,30 +300,26 @@ function submitForm() {
   if (isSigEmpty()){ err.style.display='block'; err.textContent='יש לחתום בשדה החתימה'; return; }
   err.style.display='none';
   const btn=document.getElementById('submitBtn'), loading=document.getElementById('loadingMsg');
-  btn.disabled=true; loading.style.display='block';
+  btn.disabled=true; loading.style.display='block'; loading.textContent='שולח... אנא המתן';
 
-  fetch(SCRIPT_URL+'?action=getAll&sheet='+encodeURIComponent(SHEET))
+  // בדיקת הכפילות נעשית בצד השרת
+  const payload={action:'submitVote',apt,name,phone,company:selectedCompany,sig:getSigDataURL()};
+  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
     .then(r=>r.json())
-    .then(data=>{
-      const signedApts=new Set((data.entries||[]).map(e=>parseInt(e.apt)).filter(n=>!isNaN(n)));
-      if(signedApts.has(parseInt(apt))){ err.style.display='block'; err.textContent='⚠️ דירה '+apt+' כבר הצביעה. לפניות: פנה/י למנהל הבניין.'; btn.disabled=false; loading.style.display='none'; return; }
-      const payload={apt,name,phone,company:selectedCompany,sig:getSigDataURL(),sheet:SHEET,ts:new Date().toLocaleString('he-IL')};
-      loading.textContent='שולח... אנא המתן';
-      fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
-        .then(r=>r.json())
-        .then(d=>{
-          if(d.status==='ok'){
-            document.getElementById('formCard').style.display='none';
-            document.getElementById('docHeader').style.display='none';
-            document.getElementById('successMsg').textContent='בחרת ב־'+(selectedCompany==='laad'?'לעד הנדסה 🏗️':'כהן הנדסה 🔧');
-            document.getElementById('successScreen').style.display='block';
-            fabClicked = true; fabBtn.classList.add('hidden');
-            loadProgress();
-          } else throw new Error();
-        })
-        .catch(()=>{ err.style.display='block'; err.textContent='שגיאה בשליחה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
+    .then(d=>{
+      if(d.status==='ok'){
+        document.getElementById('formCard').style.display='none';
+        document.getElementById('docHeader').style.display='none';
+        document.getElementById('successMsg').textContent='בחרת ב־'+(selectedCompany==='laad'?'לעד הנדסה 🏗️':'כהן הנדסה 🔧');
+        document.getElementById('successScreen').style.display='block';
+        fabClicked = true; fabBtn.classList.add('hidden');
+        loadProgress();
+      } else if(d.status==='duplicate'){
+        err.style.display='block'; err.textContent='⚠️ דירה '+apt+' כבר הצביעה. לפניות: פנה/י למנהל הבניין.';
+        btn.disabled=false; loading.style.display='none';
+      } else throw new Error();
     })
-    .catch(()=>{ err.style.display='block'; err.textContent='שגיאה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
+    .catch(()=>{ err.style.display='block'; err.textContent='שגיאה בשליחה — נסה שוב'; btn.disabled=false; loading.style.display='none'; });
 }
 
 
@@ -401,15 +397,14 @@ function fwLoop() {
   requestAnimationFrame(fwLoop);
 }
 function loadProgress() {
-  fetch(SCRIPT_URL+'?action=getAll&sheet='+encodeURIComponent(SHEET))
+  // action=stats מחזיר רק מיפוי דירה→בחירה — בלי שמות, טלפונים או חתימות
+  fetch(SCRIPT_URL+'?action=stats&sheet='+encodeURIComponent(SHEET))
     .then(r=>r.json())
     .then(data=>{
-      const entries=data.entries||[];
-      const aptMap={};
-      entries.forEach(e=>{ const n=parseInt(e.apt); if(!isNaN(n)) aptMap[n]=e.company; });
+      const aptMap=data.aptMap||{};
       const signedApts=new Set(Object.keys(aptMap).map(Number));
-      const laadCount =entries.filter(e=>e.company==='laad').length;
-      const cohenCount=entries.filter(e=>e.company==='cohen').length;
+      const laadCount =Object.values(aptMap).filter(c=>c==='laad').length;
+      const cohenCount=Object.values(aptMap).filter(c=>c==='cohen').length;
       const pct=Math.round(signedApts.size/TOTAL*100);
       document.getElementById('fProgLabel').textContent  = signedApts.size+' / '+TOTAL+' דירות ('+pct+'%)';
       document.getElementById('fProgFill').style.width   = pct+'%';
