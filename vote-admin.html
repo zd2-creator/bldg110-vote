@@ -357,6 +357,13 @@ function loadData() {
     .catch(()=>{ document.getElementById('loadingMsg').style.display='none'; document.getElementById('errMsg').style.display='block'; });
 }
 
+// מנטרל תווי HTML — הגנה מפני XSS דרך שדות שהוקלדו בטופס
+function esc(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function render(entries) {
   document.getElementById('loadingMsg').style.display='none';
   document.getElementById('docWrap').style.display='block';
@@ -419,11 +426,11 @@ function render(entries) {
     const coClass=e.company==='laad'?'cc-laad':'cc-cohen';
     card.innerHTML=`
       <div class="card-num">רשומה ${i+1}</div>
-      <div class="card-name">${e.name||''}<span class="card-company ${coClass}">${coLabel}</span></div>
-      <div class="card-sig">${e.sig?`<img src="${e.sig}" alt="חתימה"/>`:'<div style="height:56px;width:100px;border:1px dashed #ddd;border-radius:4px"></div>'}</div>
+      <div class="card-name">${esc(e.name)||''}<span class="card-company ${coClass}">${coLabel}</span></div>
+      <div class="card-sig">${e.sig?`<img src="${esc(e.sig)}" alt="חתימה"/>`:'<div style="height:56px;width:100px;border:1px dashed #ddd;border-radius:4px"></div>'}</div>
       <div class="card-meta">
-        <span>טלפון: ${e.phone||'—'}</span>
-        <span>דירה: ${e.apt||'—'}</span>
+        <span>טלפון: ${esc(e.phone)||'—'}</span>
+        <span>דירה: ${esc(e.apt)||'—'}</span>
       </div>`;
     cardsList.appendChild(card);
   });
@@ -434,11 +441,11 @@ function render(entries) {
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td class="num-col">${i+1}</td>
-      <td>${e.name||''}</td>
-      <td>${e.phone||''}</td>
+      <td>${esc(e.name)||''}</td>
+      <td>${esc(e.phone)||''}</td>
       <td class="co-col">${e.company==='laad'?'לעד הנדסה':'כהן הנדסה'}</td>
-      <td class="sig-cell">${e.sig?`<img src="${e.sig}"/>`:'&nbsp;'}</td>
-      <td class="num-col">${e.apt||''}</td>`;
+      <td class="sig-cell">${e.sig?`<img src="${esc(e.sig)}"/>`:'&nbsp;'}</td>
+      <td class="num-col">${esc(e.apt)||''}</td>`;
     printBody.appendChild(tr);
   });
 }
