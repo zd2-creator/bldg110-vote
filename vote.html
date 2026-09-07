@@ -7,6 +7,7 @@
 <meta property="og:type" content="website" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>בחירת חברת בדק — בניין 110</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:Arial, sans-serif; background:#f5f5f5; direction:rtl; }
@@ -146,6 +147,11 @@ canvas { width:100%; height:110px; border:1px solid #ccc; border-radius:6px; cur
 body.viewmode{padding-top:36px}
 .bgate-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:700;z-index:99998;font-family:'Heebo',Arial,sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:bgtIn .3s ease}
 @keyframes bgtIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  /* ── לוגו הבניין ── */
+  .brandlogo { display:block; margin:0 auto 12px; height:132px; width:auto; }
+  @media (max-width:420px) { .brandlogo { height:112px; } }
+  @media print { .brandlogo { height:96px; margin-bottom:10px; } }
 </style>
 <style id="gateCss">
 .bgate{position:fixed;inset:0;background:linear-gradient(180deg,#eef7f3,#f5f5f5);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;font-family:'Heebo',Arial,sans-serif;direction:rtl}
@@ -266,7 +272,8 @@ body.viewmode{padding-top:36px}
 
 <div class="no-print" style="text-align:center;padding:8px 0 4px;font-size:11px;color:#bbb;font-family:Arial;letter-spacing:0.5px">✦ נוצר בחיבה ע״י צחי דניאל, דירה 34 😉 ✦</div>
 
-<div class="doc-header" id="docHeader">
+<img class="brandlogo" src="logo.png" alt="יעל רום 6, ראשון לציון" width="322" height="396" />
+    <div class="doc-header" id="docHeader">
   <h2>בחירת חברת בדק לבניין – טבלת חתימות דיירים</h2>
   <p>בהמשך לבדיקת ההצעות שהתקבלו עבור בדק הבניין, מצורפת טבלת בחירה בין החברות.</p>
   <p style="margin-top:6px">נשמח שכל בעל דירה יסמן את החברה המועדפת עליו ויחתום.</p>
